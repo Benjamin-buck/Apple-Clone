@@ -51,6 +51,38 @@ const VideoCarousel = () => {
         }
     }, [videoId, startPlay])
 
+    const handleProcess = (type, i) => {
+        // use a switch when there is multiple cases.
+        switch (key) {
+            // if the case is video end,
+            case 'video-end':
+                // set video state by getting the previous video state
+                // spread the prevVideo array and set isEnd to true.
+                // Increment the video ID
+                setVideo((pre) => ({...pre, isEnd: true, videoId: i + 1}))
+                break;
+            // if we're at the last video, but not video end
+            // want to set video     
+            case 'video-last':
+                setVideo((pre) => ({ ...pre, isLastVideo: true}))
+                break;
+
+            case 'video-reset':
+                setVideo((pre) => ({ ...pre, isLastVideo: false, videoId: 0}))
+                break;
+
+            case 'play':
+                // is playing will be the opposite of (not)previous.isPlaying
+                setVideo((pre) => ({ ...pre, isPlaying: !pre.isPlaying}))
+                break;
+        
+            default:
+                return video;
+        }
+    }
+    
+    
+
   return (
     <>
         <div className="flex items-center">
