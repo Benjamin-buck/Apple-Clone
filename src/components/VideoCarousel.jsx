@@ -1,146 +1,110 @@
-import { useEffect, useRef, useState} from 'react';
+import { useEffect, useRef, useState } from 'react'
 import { hightlightsSlides } from '../constants'
 import gsap from 'gsap';
-import { replayImg } from '../utils';
-import { playImg } from '../utils';
-import { pauseImg } from '../utils';
-
 
 const VideoCarousel = () => {
-    const videoRef = useRef([]);
-    const videoSpanRef = useRef([]);
-    const videoDivRef = useRef([]);
+  // video reference variables
+  // useRef hook allows you to persist values between renders.
+  // can be used to store a mutable value that does not cause a re-render when updated.
+  const videoRef = useRef([]);
+  const videoSpanRef = useRef([]);
+  const videoDivRef = useRef([]);
 
-    const [loadedData, setLoadedData] = useState([])
+  // create a state for the video
+  // useState hook allows you to track the state in a function component
+  // data or properties that need to be tracking in an application.
+  const [video, setVideo] = useState({
+    // properties for the video
+    isEnd: false,
+    startPlay: false, // for each video, we need to figure out when to start play
+    videoId: 0,
+    isLastVideo: false,
+    isPlaying: false,
+  })
 
-    
-    const [video, setVideo] = useState({
-        isEnd: false,
-        startPlay: false,
-        videoId: 0,
-        isLastVideo: false,
-        isPlaying: false,
-    })
+  const [loadedData, setLoadedData] = useState([])
 
-    const { isEnd, isLastVideo, startPlay, videoId, isPlaying } = video;
+  // destructure the setVideo state data to make it easier to work with.
+  // can now use these without typing video._______
+  const { isEnd, startPlay, videoId, isLastVideo, isPlaying } = video
 
-    useEffect(() => {
-        if(loadedData.length > 3) {
-            if(!isPlaying) {
-                videoRef.current[videoId].pause();
-            } else {
-                startPlay && videoRef.current[videoId].play();
-            }
-        }
-    }, [startPlay, videoId, isPlaying, loadedData])
-    
-    useEffect(() => {
-        const currentProgress = 0;
-        let span = videoSpanRef.current;
 
-        if(span[videoId]) {
-            // animate the progress of the video
-            let anim = gsap.to(span[videoId], {
-                onUpdate: () => {
-
-                },
-                onComplete: () => {
-
-                },
-            })
-        }
-    }, [videoId, startPlay])
-
-    const handleProcess = (type, i) => {
-        // use a switch when there is multiple cases.
-        switch (key) {
-            // if the case is video end,
-            case 'video-end':
-                // set video state by getting the previous video state
-                // spread the prevVideo array and set isEnd to true.
-                // Increment the video ID
-                setVideo((pre) => ({...pre, isEnd: true, videoId: i + 1}))
-                break;
-            // if we're at the last video, but not video end
-            // want to set video     
-            case 'video-last':
-                setVideo((pre) => ({ ...pre, isLastVideo: true}))
-                break;
-
-            case 'video-reset':
-                setVideo((pre) => ({ ...pre, isLastVideo: false, videoId: 0}))
-                break;
-
-            case 'play':
-                // is playing will be the opposite of (not)previous.isPlaying
-                setVideo((pre) => ({ ...pre, isPlaying: !pre.isPlaying}))
-                break;
-        
-            default:
-                return video;
+  // Deals with the playing of the video
+  // can be retriggered when the startPlay, videoId, isPlaying, loadedData changes.
+  useEffect(() => {
+    if(loadedData.length < 3) {
+        if(!isPlaying) {
+            videoRef.current[videoId].pause();
+        } else {
+            startPlay && videoRef.current[videoId].play();
         }
     }
-    
-    
+  }, [startPlay, videoId, isPlaying, loadedData])
+  
+
+
+
+  // Create a use Effect to start playing the videos
+  // allows you to perform side effects in your components
+  // i.e., fetching data, directly updating the DOM, and timers, etc.
+  // dependency array: use the effect whenever the videoId, startPlay changes   
+  useEffect(() => {
+    // figure out where are we in the video play journey
+    const currentProgress = 0;
+
+    // get the span element of the currently playing video
+    let span = videoSpanRef.current;
+
+    // if we have the span of the videoId -> start animating
+    if(span[videoId]) {
+        // animate the progress of the video
+        let anim = gsap.to(span[videoId], {
+            // onUpdate defines what happens when the video updates
+            onUpdate: () => {
+
+            },
+
+            // what happens if the animation is complete
+            onComplete: () => {
+
+            },
+        })
+    }
+  }, [videoId, startPlay])
+
 
   return (
     <>
-        <div className="flex items-center">
+        <div className='flex items-center'>
+            {/* map over all of our highlight slides. For each one, we get a list & index*/}
             {hightlightsSlides.map((list, i) => (
-                <div key={list.id} id="slider" className='pr-10 sm:pr-20'>
+                <div key={list.id} id="slider" className='sm:pr-20 pr-10'>
                     <div className='video-carousel_container'>
                         <div className='w-full h-full flex-center rounded-3xl overflow-hidden bg-black'>
                             <video
-                                id="video"
-                                playsInline={true}
-                                preload='auto'
-                                muted
-                                ref={(el) => (videoRef.current[i] = el)}
-                                onPlay={() => {
-                                    setVideo((prevVideo) => ({
-                                        ...prevVideo, isPlaying: true
-                                    }))
-                                }}
+                              id='video'
+                              playsInline={true}
+                              preload='auto'
+                              muted
+                              // finding a specific index in the videoRefs array and setting to the current video element
+                              ref={(el) => (videoRef.current[i] = el)}
+                              onPlay={() => {
+                                setVideo((prevVideo) => ({
+                                    ...prevVideo, isPlaying: true
+                                }))
+                              }}
                             >
                                 <source src={list.video} type='video/mp4'/>
                             </video>
                         </div>
                         <div className='absolute top-12 left-[5%] z-10'>
                             {list.textLists.map((text) => (
-                                <p className='md:text-2xl text-xl font-medium' key={text}>{text}</p>
+                                <p key={text} className='md:text-2xl text-xl font-medium'>{text}</p>
                             ))}
                         </div>
                     </div>
                 </div>
             ))}
-        </div>
-
-        <div className='relative flex-center mt-10'>
-            <div className="flex-center py-5 px-7 bg-gray-300 backdrop-blur rounded-full">
-                {videoRef.current.map((_, i) => (
-                    <span
-                    key={i}
-                    ref={(el) => (videoDivRef.current[i] = el)}
-                    className="mx-2 w-3 h-3 bg-gray-200 rounded-full relative cursor-pointer"
-                    >
-                        <span className='absolute h-full w-full rounded-full' ref={(el) => (videoSpanRef.current[i] = el)} />
-                    </span>
-                ))}
-            </div>
-
-            <button className='control-btn'>
-                <img 
-                src={isLastVideo ? replayImg :
-                !isPlaying ? playImg : pauseImg
-            } alt={isLastVideo ? 'replay' : !isPlaying ? 'play' : 'pause'} 
-            onClick={isLastVideo
-                ? () => handleProcess('video-reset')
-                : !isPlaying
-                ? () => handleProcess('play')
-                : () => handleProcess('pause')
-            }
-            />
-            </button>
         </div>
     </>
   )
